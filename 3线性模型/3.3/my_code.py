@@ -73,7 +73,7 @@ def gradient(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> np.ndarray:
     X_hat = np.c_[X, np.ones((m, 1))]
     B = B.reshape(-1, 1)
     y = y.reshape(-1, 1)
-    p1 = 1 - sigmoid(np.dot(X_hat, B))
+    p1 = sigmoid(np.dot(X_hat, B))
     grad = (-X_hat * (y - p1)).sum(0)
 
     return grad.reshape(-1, 1)
@@ -91,7 +91,7 @@ def update_parameters_gradDesc(X:np.ndarray, y:np.ndarray, B:np.ndarray, learnin
 
 def predict(X:np.ndarray, B:np.ndarray):
     X_hat = np.c_[X, np.ones((X.shape[0], 1))]
-    p1 = 1 - sigmoid(np.dot(X_hat, B))
+    p1 = sigmoid(np.dot(X_hat, B))
     p1[p1 >= 0.5] = 1
     p1[p1 < 0.5] = 0
 

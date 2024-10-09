@@ -75,6 +75,7 @@ def gradient(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> np.ndarray:
     B = B.reshape(-1, 1)
     y = y.reshape(-1, 1)
     p1 = sigmoid(np.dot(X_hat, B))
+    # 按列相加
     grad = (-X_hat * (y - p1)).sum(0)
 
     return grad.reshape(-1, 1)
@@ -112,6 +113,7 @@ def logistic_model(X:np.ndarray, y:np.ndarray, num_iterations:int=100, learning_
 
 if __name__ == '__main__':
 
+    plt.rcParams['font.family'] = 'SimHei'
     data = pd.read_csv(r'3线性模型\3.3\watermelon3_0_Ch.csv').values
     
     is_good = data[:, 9] == '是'
@@ -131,7 +133,7 @@ if __name__ == '__main__':
     plt.ylabel('含糖量')
 
     # 可视化模型结果
-    beta = logistic_model(X, y, print_cost=True, method='gradDesc', learning_rate=0.3, num_iterations=1000)
+    beta = logistic_model(X, y, print_cost=True, method='gradDesc', learning_rate=0.3, num_iterations=10000)
     w1, w2, intercept = beta
     x1 = np.linspace(0, 1)
     y1 = -(w1 * x1 + intercept) / w2

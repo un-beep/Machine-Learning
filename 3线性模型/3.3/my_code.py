@@ -7,9 +7,9 @@ def sigmoid(z):
     y = 1 / (1 + np.exp(-z))
     return y
 
-def formula3_27(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> float:
+def J_cost(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> float:
     """
-    计算逻辑回归的代价函数。
+    计算逻辑回归的代价函数(损失函数)。
 
     该函数实现了逻辑回归的代价函数，用于评估模型参数B的预测效果。
     代价函数的计算基于所有样本的预测值和真实值。
@@ -49,11 +49,54 @@ def initialize_beta(n):
         n: 属性数量
     
     Returns:
-        beta: 返回初始化后的权重向量
+        B: 返回初始化后的权重向量
     """
 
-    beta = np.random.randn(n + 1, 1) * 0.5 + 1
-    return beta
+    B = np.random.randn(n + 1, 1) * 0.5 + 1
+    return B
+
+def gradient(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> np.ndarray:
+    """
+    损失函数梯度计算函数
+
+    Args:
+        X: 参数与损失函数参数一样，不做介绍
+        y: 参数与损失函数参数一样，不做介绍
+        B: 参数与损失函数参数一样，不做介绍
+
+    Returns:
+        grad: 返回损失函数关于B的一阶导数，即梯度
+    """
+    # 样本点为 m 个样本，为 X 的行数
+    m = X.shape[0]
+    # 最后一列拼接一列 1
+    X_hat = np.c_[X, np.ones((m, 1))]
+    B = B.reshape(-1, 1)
+    y = y.reshape(-1, 1)
+    p1 = 1 - sigmoid(np.dot(X_hat, B))
+    grad = (-X_hat * (y - p1)).sum(0)
+
+    return grad.reshape(-1, 1)
+
+def update_parameters_gradDesc(X:np.ndarray, y:np.ndarray, B:np.ndarray, learning_rate:float, num_iterations:int, print_cost:bool) -> np.ndarray:
+
+    for i in range(num_iterations):
+        grad = gradient(X, y, B)
+        B = B - learning_rate*grad
+        if(i % 10 == 0) & print_cost:
+            print('{}th iteration, cost is {}'.format(i, J_cost(X, y, B)))
+
+    return B
+
+
+def predict(X:np.ndarray, B:np.ndarray):
+    X_hat = np.c_[X, np.ones((X.shape[0], 1))]
+    p1 = 1 - sigmoid(np.dot(X_hat, B))
+    p1[p1 >= 0.5] = 1
+    p1[p1 < 0.5] = 0
+
+    return p1
+
 
 if __name__ == '__main__':
 

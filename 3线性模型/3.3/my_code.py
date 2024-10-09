@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from sklearn import linear_model
 
 
 def sigmoid(z):
@@ -97,6 +98,17 @@ def predict(X:np.ndarray, B:np.ndarray):
 
     return p1
 
+def logistic_model(X:np.ndarray, y:np.ndarray, num_iterations:int=100, learning_rate:float=1.2, print_cost:bool=False, method='gradDesc'):
+    m, n = X.shape
+    beta = initialize_beta(n)
+
+    if method == 'gradDesc':
+        return update_parameters_gradDesc(X, y, beta, learning_rate, num_iterations, print_cost)
+    elif method == 'Newton':
+        return 0 # return update_parameters_newton(X, y, beta, num_iterations, print_cost)
+    else:
+        raise ValueError('Unknown solver %s' % method)
+
 
 if __name__ == '__main__':
 
@@ -118,29 +130,29 @@ if __name__ == '__main__':
     plt.xlabel('密度')
     plt.ylabel('含糖量')
 
-    # # 可视化模型结果
-    # beta = logistic_model(X, y, print_cost=True, method='gradDesc', learning_rate=0.3, num_iterations=1000)
-    # w1, w2, intercept = beta
-    # x1 = np.linspace(0, 1)
-    # y1 = -(w1 * x1 + intercept) / w2
+    # 可视化模型结果
+    beta = logistic_model(X, y, print_cost=True, method='gradDesc', learning_rate=0.3, num_iterations=1000)
+    w1, w2, intercept = beta
+    x1 = np.linspace(0, 1)
+    y1 = -(w1 * x1 + intercept) / w2
 
-    # ax1, = plt.plot(x1, y1, label=r'my_logistic_gradDesc')
+    ax1, = plt.plot(x1, y1, label=r'my_logistic_gradDesc')
 
-    # lr = linear_model.LogisticRegression(solver='lbfgs', C=1000)  # 注意sklearn的逻辑回归中，C越大表示正则化程度越低。
-    # lr.fit(X, y)
+    lr = linear_model.LogisticRegression(solver='lbfgs', C=1000)  # 注意sklearn的逻辑回归中，C越大表示正则化程度越低。
+    lr.fit(X, y)
 
-    # lr_beta = np.c_[lr.coef_, lr.intercept_]
-    # print(J_cost(X, y, lr_beta))
+    lr_beta = np.c_[lr.coef_, lr.intercept_]
+    print(J_cost(X, y, lr_beta))
 
-    # # 可视化sklearn LogisticRegression 模型结果
-    # w1_sk, w2_sk = lr.coef_[0, :]
+    # 可视化sklearn LogisticRegression 模型结果
+    w1_sk, w2_sk = lr.coef_[0, :]
 
-    # x2 = np.linspace(0, 1)
-    # y2 = -(w1_sk * x2 + lr.intercept_) / w2
+    x2 = np.linspace(0, 1)
+    y2 = -(w1_sk * x2 + lr.intercept_) / w2
 
-    # ax2, = plt.plot(x2, y2, label=r'sklearn_logistic')
+    ax2, = plt.plot(x2, y2, label=r'sklearn_logistic')
 
-    # plt.legend(loc='upper right')
-    # plt.show()
+    plt.legend(loc='upper right')
+    plt.show()
 
 

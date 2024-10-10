@@ -105,14 +105,20 @@ def update_parameters_gradDesc(X:np.ndarray, y:np.ndarray, B:np.ndarray, learnin
 
     return B
 
-def update_parameters_newton(X:np.ndarray, y:np.ndarray, B:np.ndarray, learning_rate:float, num_iterations:int, print_cost:bool) -> np.ndarray:
+def update_parameters_newton(X:np.ndarray, y:np.ndarray, B:np.ndarray, num_iterations:int, print_cost:bool) -> np.ndarray:
     """
     牛顿法更新参数。公式3.29
     
+    Args:
+        X: 参数与损失函数参数一样，不做介绍
+        y: 参数与损失函数参数一样，不做介绍
+        B: 参数与损失函数参数一样，不做介绍    
+        num_iterations: 参数更新迭代次数
+        print_cost: 是否打印代价函数值    
 
-
+    Returns:
+        B: num_iterations次迭代后求得的最终参数，供预测使用
     """
-
     return B
 
 def predict(X:np.ndarray, B:np.ndarray):

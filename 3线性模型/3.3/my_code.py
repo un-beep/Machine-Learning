@@ -83,8 +83,7 @@ def gradient(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> np.ndarray:
 
 def update_parameters_gradDesc(X:np.ndarray, y:np.ndarray, B:np.ndarray, learning_rate:float, num_iterations:int, print_cost:bool) -> np.ndarray:
     """
-    梯度下降法更新参数，
-    Beta^(t+1) = Beta^t - learning_rate * ΔJ_cost(Beta)
+    梯度下降法更新参数，基于梯度的方法，通过不断移动朝着函数下降最快的方向，逐渐逼近最优解。Beta^(t+1) = Beta^t - learning_rate * ΔJ_cost(Beta)
     
     Args:
         X: 参数与损失函数参数一样，不做介绍
@@ -105,6 +104,10 @@ def update_parameters_gradDesc(X:np.ndarray, y:np.ndarray, B:np.ndarray, learnin
 
     return B
 
+def hess(X:np.ndarray, y:np.ndarray, B:np.ndarray) -> np.ndarray:
+    
+    return 0
+
 def update_parameters_newton(X:np.ndarray, y:np.ndarray, B:np.ndarray, num_iterations:int, print_cost:bool) -> np.ndarray:
     """
     牛顿法更新参数。公式3.29
@@ -119,6 +122,10 @@ def update_parameters_newton(X:np.ndarray, y:np.ndarray, B:np.ndarray, num_itera
     Returns:
         B: num_iterations次迭代后求得的最终参数，供预测使用
     """
+    for i in range(num_iterations):
+        grad = gradient(X, y, B)
+
+
     return B
 
 def predict(X:np.ndarray, B:np.ndarray):

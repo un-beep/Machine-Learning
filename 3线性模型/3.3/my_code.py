@@ -10,7 +10,7 @@ def sigmoid(z):
 
 def J_cost(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> float:
     """
-    计算逻辑回归的代价函数(损失函数)。
+    计算逻辑回归的代价函数(损失函数)。公式3.27
 
     该函数实现了逻辑回归的代价函数，用于评估模型参数B的预测效果。
     代价函数的计算基于所有样本的预测值和真实值。
@@ -58,7 +58,7 @@ def initialize_beta(n):
 
 def gradient(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> np.ndarray:
     """
-    损失函数梯度计算函数
+    损失函数梯度计算函数。公式3.30
 
     Args:
         X: 参数与损失函数参数一样，不做介绍
@@ -67,6 +67,7 @@ def gradient(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> np.ndarray:
 
     Returns:
         grad: 返回损失函数关于B的一阶导数，即梯度
+
     """
     # 样本点为 m 个样本，为 X 的行数
     m = X.shape[0]
@@ -81,7 +82,21 @@ def gradient(X: np.ndarray, y: np.ndarray, B: np.ndarray) -> np.ndarray:
     return grad.reshape(-1, 1)
 
 def update_parameters_gradDesc(X:np.ndarray, y:np.ndarray, B:np.ndarray, learning_rate:float, num_iterations:int, print_cost:bool) -> np.ndarray:
-
+    """
+    梯度下降法更新参数，
+    Beta^(t+1) = Beta^t - learning_rate * ΔJ_cost(Beta)
+    
+    Args:
+        X: 参数与损失函数参数一样，不做介绍
+        y: 参数与损失函数参数一样，不做介绍
+        B: 参数与损失函数参数一样，不做介绍    
+        learning_rate: 学习率，参数更新时的方向步长，太大容易忽略极值，太小容易收敛于局部最小
+        num_iterations: 参数更新迭代次数
+        print_cost: 是否打印代价函数值    
+    
+    Returns:
+        B: num_iterations次迭代后求得的最终参数，供预测使用
+    """
     for i in range(num_iterations):
         grad = gradient(X, y, B)
         B = B - learning_rate*grad
@@ -90,6 +105,15 @@ def update_parameters_gradDesc(X:np.ndarray, y:np.ndarray, B:np.ndarray, learnin
 
     return B
 
+def update_parameters_newton(X:np.ndarray, y:np.ndarray, B:np.ndarray, learning_rate:float, num_iterations:int, print_cost:bool) -> np.ndarray:
+    """
+    牛顿法更新参数。公式3.29
+    
+
+
+    """
+
+    return B
 
 def predict(X:np.ndarray, B:np.ndarray):
     X_hat = np.c_[X, np.ones((X.shape[0], 1))]
@@ -106,7 +130,7 @@ def logistic_model(X:np.ndarray, y:np.ndarray, num_iterations:int=100, learning_
     if method == 'gradDesc':
         return update_parameters_gradDesc(X, y, beta, learning_rate, num_iterations, print_cost)
     elif method == 'Newton':
-        return 0 # return update_parameters_newton(X, y, beta, num_iterations, print_cost)
+        return update_parameters_newton(X, y, beta, num_iterations, print_cost)
     else:
         raise ValueError('Unknown solver %s' % method)
 

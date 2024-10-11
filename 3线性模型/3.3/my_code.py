@@ -104,9 +104,28 @@ def update_parameters_gradDesc(X:np.ndarray, y:np.ndarray, B:np.ndarray, learnin
 
     return B
 
-def hess(X:np.ndarray, y:np.ndarray, B:np.ndarray) -> np.ndarray:
-    
-    return 0
+def hess_matrix(X:np.ndarray, y:np.ndarray, B:np.ndarray) -> np.ndarray:
+    """
+    构建黑塞矩阵。即公式3.31
+
+    Args:
+        X: 参数与损失函数参数一样，不做介绍
+        y: 参数与损失函数参数一样，不做介绍
+        B: 参数与损失函数参数一样，不做介绍    
+
+    Returns:
+        Hess: 构建完成的黑塞矩阵
+    """
+    # 样本点为 m 个样本，为 X 的行数
+    m = X.shape[0]
+    # 最后一列拼接一列 1
+    X_hat = np.c_[X, np.ones((m, 1))]
+    B = B.reshape(-1, 1)
+    y = y.reshape(-1, 1)
+    p1 = sigmoid(np.dot(X_hat, B)) 
+    p = p1 * (1 - p1)
+    Hess = ()
+    return Hess
 
 def update_parameters_newton(X:np.ndarray, y:np.ndarray, B:np.ndarray, num_iterations:int, print_cost:bool) -> np.ndarray:
     """
@@ -124,7 +143,10 @@ def update_parameters_newton(X:np.ndarray, y:np.ndarray, B:np.ndarray, num_itera
     """
     for i in range(num_iterations):
         grad = gradient(X, y, B)
-
+        Hess = hess_matrix(X, y, B)
+        B = B - np.dot(np.linalg.inv(Hess), grad)
+        if(i % 10 == 0) & print_cost:
+            print('{}th iteration, cost is {}'.format(i, J_cost(X, y, B)))
 
     return B
 
@@ -140,9 +162,9 @@ def logistic_model(X:np.ndarray, y:np.ndarray, num_iterations:int=100, learning_
     m, n = X.shape
     beta = initialize_beta(n)
 
-    if method == 'gradDesc':
+    if method == 'my_logistic_gradDesc':
         return update_parameters_gradDesc(X, y, beta, learning_rate, num_iterations, print_cost)
-    elif method == 'Newton':
+    elif method == 'my_logistic_Newton':
         return update_parameters_newton(X, y, beta, num_iterations, print_cost)
     else:
         raise ValueError('Unknown solver %s' % method)
@@ -169,13 +191,15 @@ if __name__ == '__main__':
     plt.xlabel('密度')
     plt.ylabel('含糖量')
 
+    method = r'my_logistic_gradDesc'
+    # method = r'my_logistic_Newton'
     # 可视化模型结果
-    beta = logistic_model(X, y, print_cost=True, method='gradDesc', learning_rate=0.3, num_iterations=10000)
+    beta = logistic_model(X, y, print_cost=True, method=method, learning_rate=0.3, num_iterations=10000)
     w1, w2, intercept = beta
     x1 = np.linspace(0, 1)
     y1 = -(w1 * x1 + intercept) / w2
 
-    ax1, = plt.plot(x1, y1, label=r'my_logistic_gradDesc')
+    ax1, = plt.plot(x1, y1, label=method)
 
     lr = linear_model.LogisticRegression(solver='lbfgs', C=1000)  # 注意sklearn的逻辑回归中，C越大表示正则化程度越低。
     lr.fit(X, y)

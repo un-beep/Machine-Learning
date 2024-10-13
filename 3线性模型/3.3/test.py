@@ -17,3 +17,6 @@ print(torch.cuda.get_device_name(0))
 
 #例子
 print(torch.rand(3,3).cuda())
+
+
+

@@ -53,7 +53,7 @@ def genetic_algorithm(actual_load, population_size=100, generations=100):
 
 # 使用示例
 if __name__ == "__main__":
-    actual_load = 800  # 示例总负荷
+    actual_load = 2200  # 示例总负荷
     best_solution = genetic_algorithm(actual_load)
     print("最佳设备状态（0/1表示）：", best_solution)
     print("对应负荷：", np.dot(best_solution, powers), "W")

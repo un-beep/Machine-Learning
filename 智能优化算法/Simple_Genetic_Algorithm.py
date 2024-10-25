@@ -41,6 +41,18 @@ population = 100
 genes = 100
 generations = 100
 
+#initial population
 pop = np.random.randint(0,2, size=(population,genes))
+fitness = 0
+for i in range(generations):
+    pop = simple_GA(pop)
+    fitness = np.sum(pop,axis=1)
+    
+    print(f"Generation {i+1}")
+    print(f"    Max fitness {np.max(fitness)}")
+    print(f"    Min fitness {np.min(fitness)}")
+    print(f"    Mean fitness {np.mean(fitness)}")
+    print(f"    Std fitness {np.std(fitness)}")
 
-simple_GA(pop)
+plt.hist(fitness)
+plt.show()

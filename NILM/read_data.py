@@ -33,7 +33,7 @@ print(average_power)
 
 # 5. 数据可视化
 plt.figure(figsize=(12, 6))
-plt.plot(data['timestamp'], data['total_load'], label='Total Load', color='blue')
+plt.plot( data['total_load'], label='Total Load', color='blue')
 plt.xlabel('Time')
 plt.ylabel('Power (W)')
 plt.title('Total Power Load Over Time')

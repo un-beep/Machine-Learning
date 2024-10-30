@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # 1. 加载数据集
-data = pd.read_csv(r'NILM\Electricity_P.csv')
+
+data = pd.read_csv(r'NILM\Electricity_Data\Electricity_P.csv')
 
 # 2. 将 UNIX 时间戳转换为可读的日期格式
 data['timestamp'] = pd.to_datetime(data['UNIX_TS'], unit='s')
@@ -19,12 +20,11 @@ data.fillna(0, inplace=True)  # 或使用 data.dropna() 删除含缺失值的行
 
 # 4. 数据分析
 # 计算总功率消耗
-temp = data
-temp.drop('timestamp', axis=1, inplace=True)  # 删除 UNIX 时间戳列
-data['total_load'] = temp.sum(axis=1)
+
+data['total_load'] = data[:,-1:].sum(axis=1)
 
 # 计算各个电器的平均功率
-average_power = temp.mean()
+average_power = data[:,-1:].mean()
 print("\n各电器的平均功率：")
 print(average_power)
 

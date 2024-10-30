@@ -1,3 +1,7 @@
 .venv/
 3线性模型/3.3/test.py
 data/
+NILM/Electricity_Data/Electricity_I.csv
+NILM/Electricity_Data/Electricity_P.csv
+NILM/Electricity_Data/Electricity_Q.csv
+NILM/Electricity_Data/Electricity_S.csv

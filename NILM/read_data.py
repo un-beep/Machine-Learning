@@ -24,6 +24,8 @@ column_headers = {'WHE': "whole_house", 'RSE':'rental_suite', 'GRE' : 'garage','
 
 P_Data = P_Data.rename(columns=column_headers)
 
+P_Data.info(verbose=True)
+
 # 4. 选取数据以供处理
 appliances = ['main_house', 'clothes_washer', 'dish_washer', 'heat_pump', 
               'wall_oven', 'clothes_dryer', 'fridge', 'hot_water', 'tv_pvr']
@@ -31,8 +33,6 @@ appliances = ['main_house', 'clothes_washer', 'dish_washer', 'heat_pump',
 P_Data = P_Data[appliances]
 
 # print(P_Data.head(n=5))
-
-P_Data.info(verbose=True)
 
 # Format for converting "datetime" object into string
 format_datetime = "%Y-%m-%d %H:%M:%S"

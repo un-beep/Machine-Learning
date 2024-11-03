@@ -26,7 +26,6 @@ I_Data = I_Data.rename(columns=column_headers)
 
 I_Data.info(verbose=True)
 
-
 # 3. 数据预处理
 # 检查缺失值
 print("缺失值检查：")
@@ -35,13 +34,11 @@ print(I_Data.isnull().sum())
 # 填补缺失值
 I_Data.fillna(0, inplace=True)  # 或使用 data.dropna() 删除含缺失值的行
 
-# 4. 选取数据以供处理
-# appliances = ['main_house', 'clothes_washer', 'dish_washer', 'heat_pump', 
-            #   'wall_oven', 'clothes_dryer', 'fridge', 'hot_water', 'tv_pvr']
+# 4. 选取设备数据以供处理, 选取120V 15A子电表作为设备, 统一数据格式
+appliances = ['clothes_washer', 'dish_washer', 'hot_water', 
+               'furnace', 'fridge']
 
-# P_Data = P_Data[appliances]
-
-print(P_Data.head(n=5))
+I_Data = I_Data[appliances]
 
 # # 4. 数据分析
 # # 计算总功率消耗

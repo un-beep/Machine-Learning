@@ -34,9 +34,12 @@ I_Data = I_Data[appliances]
 
 # 5. 电流量化
 mi = 15  # 最大电流量化值
-min_distance = 2  # 设置峰值之间的最小距离阈值
+min_distance = 1  # 设置峰值之间的最小距离阈值
 min_height = 1e-2  # 设置峰值的最小高度阈值，去掉过小的毛刺
 min_current_threshold = 0.1  # 设置忽略的最低电流值
+
+# 定义全局变量以存储每个电器的工作状态与对应范围
+global_state_ranges = {}
 
 # 统计每个电器电流量化后的统计分布
 for appliance in appliances:
@@ -56,13 +59,14 @@ for appliance in appliances:
     # 量化状态
     state_probabilities = {}
     state_currents = {}  # 保存状态对应的电流值
+    state_ranges = {}  # 保存状态对应的电流范围
     state_index = 0
 
     # 确定峰值领域
     peak_ranges = []
     for peak in peak_values:
-        lower_bound = max(0, peak - 0.2)
-        upper_bound = min(mi, peak + 0.2)
+        lower_bound = max(0, peak - min_distance/10)
+        upper_bound = min(mi, peak + min_distance/10)
         peak_ranges.append((lower_bound, upper_bound))
         
         # 计算该状态的总概率
@@ -70,6 +74,7 @@ for appliance in appliances:
         
         state_probabilities[state_index] = total_prob  # 状态索引与概率对应
         state_currents[state_index] = peak  # 保存电流值
+        state_ranges[state_index] = (lower_bound, upper_bound)  # 保存电流范围
         state_index += 1  # 
 
     # 确定 OFF 状态的概率
@@ -81,12 +86,31 @@ for appliance in appliances:
     off_prob = pmf[~in_peak_ranges].sum()  # 不在峰值领域内的概率
     state_probabilities[state_index] = off_prob  # 将off状态的概率
     state_currents[state_index] = "OFF"  # OFF 状态不对应具体电流
+    state_ranges[state_index] = (None, None)  # OFF 状态没有具体电流范围
     state_index += 1  # 增加off状态索引
 
-    # 输出状态及其概率
+    # 输出状态及其概率和对应的电流范围
     print(f"Probable load states for {appliance}:")
     for state, prob in state_probabilities.items():
         if state < state_index - 1:  # 判断是否为off状态
-            print(f"State {state} (Current: {state_currents[state]:.1f} A): Probability {prob:.4f} (ON state)")
-        else:
-            print(f"State {state} (Current: {state_currents[state]}): Probability {prob:.4f} (OFF state)")
+            lower_bound, upper_bound = state_ranges[state]
+            print(f"State {state} (Current: {state_currents[state]:.1f} A): Probability {prob:.4f} (ON state), Range: ({lower_bound:.1f} A, {upper_bound:.1f} A)")
+    else:
+        print(f"State {state} (Current: {state_currents[state]}): Probability {prob:.4f} (OFF state)")
+
+      # 将电器状态和对应范围存储到全局变量中
+    global_state_ranges[appliance] = state_ranges
+
+    # 打标签到I_Data
+    labels = []
+    for current in I_Data[appliance]:
+        current_label = "OFF"  # 默认标签为OFF
+        for state, (lower_bound, upper_bound) in state_ranges.items():
+            if lower_bound is not None and upper_bound is not None and lower_bound <= current <= upper_bound:
+                current_label = f"State {state} (Current: {state_currents[state]:.1f} A)"
+                break
+        labels.append(current_label)
+    
+    I_Data[f'{appliance}_state'] = labels  # 在I_Data中添加状态列
+    
+print(I_Data.head(n=5))

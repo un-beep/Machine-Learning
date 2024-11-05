@@ -5,12 +5,19 @@ from scipy.signal import find_peaks
 
 path = r"NILM\Electricity_Data"
 # 1. 加载数据集
+# 电流数据
 I_Data = pd.read_csv(path + r'\Electricity_I.csv', parse_dates=True)
+# 有功功率数据
+P_Data = pd.read_csv(path + r'\Electricity_P.csv', parse_dates=True)
 
 # 2. 将 UNIX 时间戳转换为可读的日期格式
 I_Data['timestamp'] = pd.to_datetime(I_Data['UNIX_TS'], unit='s', errors='coerce')
 I_Data = I_Data.set_index(['timestamp'])
 I_Data.drop('UNIX_TS', axis=1, inplace=True)
+
+P_Data['timestamp'] = pd.to_datetime(P_Data['UNIX_TS'], unit='s', errors='coerce')
+P_Data = P_Data.set_index(['timestamp'])
+P_Data.drop('UNIX_TS', axis=1, inplace=True)
 
 # 3. 使用列名全称替换简写
 column_headers = {
@@ -23,14 +30,14 @@ column_headers = {
 }
 
 I_Data = I_Data.rename(columns=column_headers)
-
+P_Data = P_Data.rename(columns=column_headers)
 # 3. 数据预处理
 I_Data.fillna(0, inplace=True)
-
+P_Data.fillna(0, inplace=True)
 # 4. 选取设备数据以供处理
-appliances = ['dish_washer', 'clothes_washer', 'furnace', 'fridge']
+appliances = ['dish_washer', 'tv_pvr', 'furnace', 'fridge']
 I_Data = I_Data[appliances]
-
+P_Data = I_Data[appliances]
 
 # 5. 电流量化
 mi = 15  # 最大电流量化值

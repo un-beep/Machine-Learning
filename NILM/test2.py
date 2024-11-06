@@ -34,7 +34,7 @@ P_Data.fillna(0, inplace=True)
 
 # 5. 定义常量
 appliances = ['dish_washer', 'tv_pvr', 'furnace', 'fridge']  # 只选择这几个电器
-min_distance = 1  # 峰值之间的最小距离
+min_distance = 2  # 峰值之间的最小距离
 min_height = 1e-2  # 峰值的最小高度
 min_current_threshold = 0.1  # 最小电流阈值
 
@@ -55,28 +55,33 @@ def get_device_states(appliance, current_values, pmf):
     state_currents = {}
     state_ranges = {}
     peak_ranges = []
+    state_index = 1
 
     # 确定峰值领域
     for peak in peak_values:
         lower_bound = peak - min_distance / 10
         upper_bound = peak + min_distance / 10
-        peak_ranges.append((lower_bound, upper_bound))
+        peak_ranges.append((round(lower_bound, 1), round(upper_bound, 1)))
 
         # 计算该状态的概率
         total_prob = pmf[(pmf.index >= lower_bound) & (pmf.index <= upper_bound)].sum()
-        state_probabilities[peak] = total_prob
-        state_currents[peak] = peak
-        state_ranges[peak] = (lower_bound, upper_bound)
-    
+        state_probabilities[state_index] = total_prob
+        state_currents[state_index] = peak
+        state_ranges[state_index] = (lower_bound, upper_bound)
+        state_index += 1
+
     # 计算OFF状态的概率
     in_peak_ranges = np.array([False] * len(pmf))
     for lower, upper in peak_ranges:
         in_peak_ranges |= (pmf.index >= lower) & (pmf.index <= upper)
-    
+    state_index = 0
     off_prob = pmf[~in_peak_ranges].sum()
-    state_probabilities['off'] = off_prob
-    state_currents['off'] = 0.0
-    state_ranges['off'] = (None, None)
+    state_probabilities[state_index] = off_prob
+    state_currents[state_index] = 0.0
+    state_ranges[state_index] = (None, None)
+
+    # 将电器的状态范围保存在全局变量中
+    global_state_ranges[appliance] = state_ranges
 
     return state_probabilities, state_currents, state_ranges
 
@@ -112,6 +117,13 @@ for appliance, states in device_states.items():
     for state, details in states.items():
         print(f"  {state} -> Current: {details['current']} A, Power: {details['power']} W")
 
+# 输出全局电流范围
+print("\n全局电器电流范围（全局变量）:")
+for appliance, ranges in global_state_ranges.items():
+    print(f"{appliance}:")
+    for state, (lower, upper) in ranges.items():
+        print(f"  {state} -> Range: {lower} A to {upper} A")
+
 # 10. 仅保留所选电器的电流和功率数据
 I_Data = I_Data[appliances]
 P_Data = P_Data[appliances]
@@ -121,28 +133,28 @@ I_Data['total_current'] = I_Data.sum(axis=1).round(1)
 P_Data['total_power'] = P_Data.sum(axis=1).round(1)
 
 # 12. 添加电流数据的工作状态编码
-def get_state_code_for_current(appliance, current_values, state_ranges):
+def get_state_code_for_current(current_values, state_ranges):
     """
     根据当前电流值为每行电流数据分配工作状态编码
     """
     state_codes = []
     for current in current_values:
-        state_code = 'off'  # 默认状态为OFF
+        state_code = 0  # 默认状态为0
         for state, (lower_bound, upper_bound) in state_ranges.items():
             if lower_bound is not None and upper_bound is not None and lower_bound <= current <= upper_bound:
-                state_code = f'state_{state}'  # 使用状态编码
+                state_code = f'{state}'  # 使用状态编码
                 break
         state_codes.append(state_code)
     return state_codes
 
 # 添加电流数据的状态编码列
 for appliance in appliances:
-    state_codes = get_state_code_for_current(appliance, I_Data[appliance], state_ranges)
-    I_Data[f'{appliance}_state_code'] = state_codes  # 添加电流状态编码列
+    state_codes = get_state_code_for_current(I_Data[appliance], global_state_ranges[appliance])
+    I_Data[f'{appliance}_S'] = state_codes  # 添加电流状态编码列
 
 # 13. 使功率数据的状态编码与电流数据一致
 for appliance in appliances:
-    P_Data[f'{appliance}_state_code'] = I_Data[f'{appliance}_state_code']
+    P_Data[f'{appliance}_S'] = I_Data[f'{appliance}_S']
 
 # 14. 保存数据
 I_Data.to_csv(path + r'\I_data_with_total_and_state.csv')

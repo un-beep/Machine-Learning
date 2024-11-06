@@ -5,3 +5,5 @@ NILM/Electricity_Data/Electricity_I.csv
 NILM/Electricity_Data/Electricity_P.csv
 NILM/Electricity_Data/Electricity_Q.csv
 NILM/Electricity_Data/Electricity_S.csv
+NILM/Electricity_Data/I_data_with_total_and_state.csv
+NILM/Electricity_Data/P_data_with_total_and_state.csv

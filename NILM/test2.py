@@ -145,8 +145,8 @@ for appliance in appliances:
     P_Data[f'{appliance}_state_code'] = I_Data[f'{appliance}_state_code']
 
 # 14. 保存数据
-I_Data.to_csv(path + r'I_data_with_total_and_state.csv')
-P_Data.to_csv(path + r'P_data_with_total_and_state.csv')
+I_Data.to_csv(path + r'\I_data_with_total_and_state.csv')
+P_Data.to_csv(path + r'\P_data_with_total_and_state.csv')
 
 # 打印前几行查看结果
 print(I_Data.head())

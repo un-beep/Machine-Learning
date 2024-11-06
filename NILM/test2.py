@@ -42,7 +42,7 @@ min_current_threshold = 0.1  # 最小电流阈值
 global_state_ranges = {}
 
 # 7. 计算电器工作状态
-def get_device_states(appliance, current_values, pmf):
+def get_device_states(appliance, pmf):
     """
     根据PMF识别峰值并将电流范围对应为工作状态。
     """
@@ -67,7 +67,7 @@ def get_device_states(appliance, current_values, pmf):
         total_prob = pmf[(pmf.index >= lower_bound) & (pmf.index <= upper_bound)].sum()
         state_probabilities[state_index] = total_prob
         state_currents[state_index] = peak
-        state_ranges[state_index] = (lower_bound, upper_bound)
+        state_ranges[state_index] = (round(lower_bound, 1), round(upper_bound, 1))
         state_index += 1
 
     # 计算OFF状态的概率
@@ -96,7 +96,7 @@ for appliance in appliances:
     pmf = value_counts / total_measurements if total_measurements > 0 else value_counts
 
     # 2. 获取状态信息
-    state_probabilities, state_currents, state_ranges = get_device_states(appliance, current_values, pmf)
+    state_probabilities, state_currents, state_ranges = get_device_states(appliance, pmf)
     
     # 3. 输出状态和对应的电流范围、功率平均值
     appliance_states = {}

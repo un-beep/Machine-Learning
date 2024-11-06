@@ -6,29 +6,38 @@ device_states = {
     'dish_washer': {'state_0': {'current': 0.0, 'power': 0.0}, 
                     'state_1': {'current': 0.4, 'power': 15.02}, 
                     'state_2': {'current': 1.2, 'power': 141.98}, 
-                    'state_3': {'current': 6.4, 'power': 776.38}},
+                    'state_3': {'current': 6.4, 'power': 776.38}
+                },
 
     'tv_pvr':      {'state_0': {'current': 0.0, 'power': 0.0},
-                    'state_1': {'current': 0.5, 'power': 38.72},},
+                    'state_1': {'current': 0.5, 'power': 38.72},
+                    'state_2': {'current': 0.0, 'power': 0.0}, 
+                    'state_3': {'current': 0.5, 'power': 38.72}
+                },
 
     'furnace':     {'state_0': {'current': 0.0, 'power': 0.0},
                     'state_1': {'current': 1.3, 'power': 109.62}, 
-                    'state_3': {'current': 2.2, 'power': 185.86},},
+                    'state_2': {'current': 2.2, 'power': 185.86},
+                    'state_3': {'current': 0.0, 'power': 0.0}
+                },
 
     'fridge':      {'state_0': {'current': 0.0, 'power': 0.0}, 
-                    'state_1': {'current': 1.0, 'power': 130.74},},
+                    'state_1': {'current': 1.0, 'power': 130.74},
+                    'state_2': {'current': 0.0, 'power': 0.0},
+                    'state_3': {'current': 1.0, 'power': 130.74}
+                },
 }
 
 # 目标电流和功率
-target_current = 1.7  # 总电流
-target_power = 140    # 总有功功率
+target_current = 2.7  # 总电流
+target_power = 268    # 总有功功率
 
 # 设备数量
 num_devices = len(device_states)
 
 # 个体表示：每个个体是一个整数数组，代表设备的工作状态
 # 状态映射: 0 - off, 1 - state_1, 2 - state_2, 3 - state_3
-state_mapping = {'off': 0, 'state_1': 1, 'state_2': 2, 'state_3': 3}
+state_mapping = {'state_0': 0, 'state_1': 1, 'state_2': 2, 'state_3': 3}
 
 # 初始化种群
 def init_population(pop_size):

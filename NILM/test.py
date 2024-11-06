@@ -25,7 +25,7 @@ device_states = {
 
 # 目标电流和功率
 target_current = 2.7  # 总电流
-target_power = 268    # 总有功功率
+target_power = 280    # 总有功功率
 
 # 设备数量
 num_devices = len(device_states)
@@ -50,27 +50,32 @@ def init_population(pop_size):
         population.append(individual)
     return population
 
-# 计算电流和有功功率
-def calculate_total_current(individual):
+# 计算电流和功率适应度函数
+# 电流函数fun1
+def fun1(individual):
     total_current = 0.0
-    total_power = 0.0
     for i, state_code in enumerate(individual):
         device = list(device_states.keys())[i]
         state_name = state_mapping[device][state_code]
         total_current += device_states[device][state_name]['current']
+    return abs(round(target_current - total_current, 1))
+
+# 功率函数fun2
+def fun2(individual):
+    total_power = 0.0
+    for i, state_code in enumerate(individual):
+        device = list(device_states.keys())[i]
+        state_name = state_mapping[device][state_code]
         total_power += device_states[device][state_name]['power']
-    return total_current, total_power
+    return abs(round(target_power - total_power, 1))
+
 
 # 适应度函数：计算目标值与实际值的差异
 def fitness(individual):
-    total_current, total_power = calculate_total_current(individual)
     
-    # 计算两个目标：电流和功率与目标值的差异（最小化差异）
-    current_diff = abs(total_current - target_current)
-    power_diff = abs(total_power - target_power)
     
     # 返回电流差异和功率差异
-    return current_diff, power_diff
+    return 1
 
 # 选择操作：轮盘赌选择
 def selection(population):
@@ -151,7 +156,7 @@ def nsga2(pop_size, generations, mutation_rate):
     return best_individual
 
 # 执行NSGA-II算法
-best_individual = nsga2(pop_size=500, generations=100, mutation_rate=0.1)
+best_individual = nsga2(pop_size=50, generations=200, mutation_rate=0.05)
 
 # 输出最终结果
 print("\nBest Individual Found:")

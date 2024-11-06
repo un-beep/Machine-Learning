@@ -3,28 +3,23 @@ import random
 
 # 假设每个设备的电流状态和有功功率状态
 device_states = {
-    'dish_washer': {'state_0': {'current': 0.0, 'power': 0.0}, 
-                    'state_1': {'current': 0.4, 'power': 15.02}, 
-                    'state_2': {'current': 1.2, 'power': 141.98}, 
-                    'state_3': {'current': 6.4, 'power': 776.38}
+    'dish_washer': {'state_00': {'current': 0.0, 'power': 0.0}, 
+                    'state_01': {'current': 0.4, 'power': 15.02}, 
+                    'state_10': {'current': 1.2, 'power': 141.98}, 
+                    'state_11': {'current': 6.4, 'power': 776.38}
                 },
 
     'tv_pvr':      {'state_0': {'current': 0.0, 'power': 0.0},
                     'state_1': {'current': 0.5, 'power': 38.72},
-                    'state_2': {'current': 0.0, 'power': 0.0}, 
-                    'state_3': {'current': 0.5, 'power': 38.72}
                 },
 
-    'furnace':     {'state_0': {'current': 0.0, 'power': 0.0},
-                    'state_1': {'current': 1.3, 'power': 109.62}, 
-                    'state_2': {'current': 2.2, 'power': 185.86},
-                    'state_3': {'current': 0.0, 'power': 0.0}
+    'furnace':     {'state_00': {'current': 0.0, 'power': 0.0},
+                    'state_01': {'current': 1.3, 'power': 109.62}, 
+                    'state_10': {'current': 2.2, 'power': 185.86},
                 },
 
-    'fridge':      {'state_0': {'current': 0.0, 'power': 0.0}, 
-                    'state_1': {'current': 1.0, 'power': 130.74},
-                    'state_2': {'current': 0.0, 'power': 0.0},
-                    'state_3': {'current': 1.0, 'power': 130.74}
+    'fridge':      {'state_00': {'current': 0.0, 'power': 0.0}, 
+                    'state_01': {'current': 1.0, 'power': 130.74},
                 },
 }
 

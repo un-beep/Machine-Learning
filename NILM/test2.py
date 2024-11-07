@@ -1,165 +1,171 @@
-import pandas as pd
-import numpy as np
+import math
+import random
 import matplotlib.pyplot as plt
-from scipy.signal import find_peaks
+# First function to optimize
+def function1(x):
+    return -x**2
 
-# 1. 加载数据集
-path = r"NILM\Electricity_Data"
-I_Data = pd.read_csv(path + r'\Electricity_I.csv', parse_dates=True)
-P_Data = pd.read_csv(path + r'\Electricity_P.csv', parse_dates=True)
+# Second function to optimize
+def function2(x):
+    return -(x-2)**2
 
-# 2. 处理时间戳
-I_Data['timestamp'] = pd.to_datetime(I_Data['UNIX_TS'], unit='s', errors='coerce')
-P_Data['timestamp'] = pd.to_datetime(P_Data['UNIX_TS'], unit='s', errors='coerce')
-I_Data = I_Data.set_index('timestamp')
-P_Data = P_Data.set_index('timestamp')
-I_Data.drop('UNIX_TS', axis=1, inplace=True)
-P_Data.drop('UNIX_TS', axis=1, inplace=True)
+# Function to find the index of a value in a list
+def index_of(a, list):
+    try:
+        return list.index(a)
+    except ValueError:
+        return -1
 
-# 3. 替换列名为全称
-column_headers = {
-    'WHE': "whole_house", 'RSE': 'rental_suite', 'GRE': 'garage', 'MHE': 'main_house', 
-    'B1E': 'bedroom_1', 'BME': 'basement', 'CWE': 'clothes_washer', 'DWE': 'dish_washer', 
-    'EQE': 'equipment', 'FRE': 'furnace', 'HPE': 'heat_pump', 'OFE': 'home_office', 
-    'UTE': 'utility', 'WOE': 'wall_oven', 'B2E': 'bedroom_2', 'CDE': 'clothes_dryer', 
-    'DNE': 'dining_room', 'EBE': 'workbench', 'FGE': 'fridge', 'HTE': 'hot_water', 
-    'OUE': 'outside', 'TVE': 'tv_pvr', 'UNE': 'unmetered'
-}
-I_Data = I_Data.rename(columns=column_headers)
-P_Data = P_Data.rename(columns=column_headers)
+# Function to sort by values
+def sort_by_values(list1, values):
+    sorted_list = []
+    values_copy = values[:]
+    while len(sorted_list) != len(list1):
+        min_index = index_of(min(values_copy), values_copy)
+        if min_index in list1:
+            sorted_list.append(min_index)
+        values_copy[min_index] = math.inf
+    return sorted_list
 
-# 4. 数据预处理
-I_Data.fillna(0, inplace=True)
-P_Data.fillna(0, inplace=True)
+# Function to carry out NSGA-II's fast non dominated sort
+def fast_non_dominated_sort(values1, values2):
+    S = [[] for _ in range(len(values1))]
+    front = [[]]
+    n = [0 for _ in range(len(values1))]
+    rank = [0 for _ in range(len(values1))]
 
-# 5. 定义常量
-appliances = ['dish_washer', 'tv_pvr', 'furnace', 'fridge']  # 只选择这几个电器
-min_distance = 2  # 峰值之间的最小距离
-min_height = 1e-2  # 峰值的最小高度
-min_current_threshold = 0.1  # 最小电流阈值
+    for p in range(len(values1)):
+        S[p] = []
+        n[p] = 0
+        for q in range(len(values1)):
+            if (values1[p] > values1[q] and values2[p] > values2[q]) or \
+               (values1[p] >= values1[q] and values2[p] > values2[q]) or \
+               (values1[p] > values1[q] and values2[p] >= values2[q]):
+                S[p].append(q)
+            elif (values1[q] > values1[p] and values2[q] > values2[p]) or \
+                 (values1[q] >= values1[p] and values2[q] > values2[p]) or \
+                 (values1[q] > values1[p] and values2[q] >= values2[p]):
+                n[p] += 1
+        if n[p] == 0:
+            rank[p] = 0
+            if p not in front[0]:
+                front[0].append(p)
 
-# 6. 定义全局变量存储状态范围
-global_state_ranges = {}
+    i = 0
+    while front[i]:
+        Q = []
+        for p in front[i]:
+            for q in S[p]:
+                n[q] -= 1
+                if n[q] == 0:
+                    rank[q] = i + 1
+                    if q not in Q:
+                        Q.append(q)
+        i += 1
+        front.append(Q)
+    del front[-1]
+    return front
 
-# 7. 计算电器工作状态
-def get_device_states(appliance, pmf):
-    """
-    根据PMF识别峰值并将电流范围对应为工作状态。
-    """
-    # 寻找PMF中的峰值
-    peaks, _ = find_peaks(pmf.values, height=min_height, distance=min_distance)
-    peak_values = pmf.index[peaks]
+# Function to calculate crowding distance
+def crowding_distance(values1, values2, front):
+    distance = [0 for _ in range(len(front))]
+    sorted1 = sort_by_values(front, values1[:])
+    sorted2 = sort_by_values(front, values2[:])
+    distance[0] = distance[-1] = float('inf')
+    for k in range(1, len(front) - 1):
+        distance[k] += (values1[sorted1[k + 1]] - values1[sorted1[k - 1]]) / (max(values1) - min(values1))
+        distance[k] += (values2[sorted2[k + 1]] - values2[sorted2[k - 1]]) / (max(values2) - min(values2))
+    return distance
+
+# Function to carry out the crossover
+def crossover(a, b):
+    r = random.random()
+    if r > 0.5:
+        return mutation((a + b) / 2)
+    else:
+        return mutation((a - b) / 2)
+
+# Function to carry out the mutation operator
+def mutation(solution):
+    mutation_prob = random.random()
+    if mutation_prob < 0.1:
+        solution = min_x + (max_x - min_x) * random.random()
+    return solution
+
+# Main program starts here
+pop_size = 20
+max_gen = 50
+
+# Initialization
+min_x = -55
+max_x = 55
+solution = [min_x + (max_x - min_x) * random.random() for _ in range(pop_size)]
+gen_no = 0
+
+# Tracking progress for visualization
+progress = []
+
+while gen_no < max_gen:
+    function1_values = [function1(solution[i]) for i in range(pop_size)]
+    function2_values = [function2(solution[i]) for i in range(pop_size)]
+    non_dominated_sorted_solution = fast_non_dominated_sort(function1_values[:], function2_values[:])
+    print(f"The best front for Generation number {gen_no} is")
+    for value in non_dominated_sorted_solution[0]:
+        print(round(solution[value], 3), end=" ")
+    print("\n")
     
-    # 存储状态概率、状态电流和状态范围
-    state_probabilities = {}
-    state_currents = {}
-    state_ranges = {}
-    peak_ranges = []
-    state_index = 1
-
-    # 确定峰值领域
-    for peak in peak_values:
-        lower_bound = peak - min_distance / 10
-        upper_bound = peak + min_distance / 10
-        peak_ranges.append((round(lower_bound, 1), round(upper_bound, 1)))
-
-        # 计算该状态的概率
-        total_prob = pmf[(pmf.index >= lower_bound) & (pmf.index <= upper_bound)].sum()
-        state_probabilities[state_index] = total_prob
-        state_currents[state_index] = peak
-        state_ranges[state_index] = (round(lower_bound, 1), round(upper_bound, 1))
-        state_index += 1
-
-    # 计算OFF状态的概率
-    in_peak_ranges = np.array([False] * len(pmf))
-    for lower, upper in peak_ranges:
-        in_peak_ranges |= (pmf.index >= lower) & (pmf.index <= upper)
-    state_index = 0
-    off_prob = pmf[~in_peak_ranges].sum()
-    state_probabilities[state_index] = off_prob
-    state_currents[state_index] = 0.0
-    state_ranges[state_index] = (None, None)
-
-    # 将电器的状态范围保存在全局变量中
-    global_state_ranges[appliance] = state_ranges
-
-    return state_probabilities, state_currents, state_ranges
-
-# 8. 遍历每个电器并计算其工作状态
-device_states = {}
-for appliance in appliances:
-    # 1. 获取电流数据并计算PMF
-    current_values = I_Data[appliance].round(1)
-    filtered_values = current_values[current_values > min_current_threshold]
-    value_counts = filtered_values.value_counts().sort_index()
-    total_measurements = len(filtered_values)
-    pmf = value_counts / total_measurements if total_measurements > 0 else value_counts
-
-    # 2. 获取状态信息
-    state_probabilities, state_currents, state_ranges = get_device_states(appliance, pmf)
+    # Store progress for visualization
+    progress.append((function1_values, function2_values))
     
-    # 3. 输出状态和对应的电流范围、功率平均值
-    appliance_states = {}
-    for state, prob in state_probabilities.items():
-        if state == 'off':
-            appliance_states[state] = {'current': state_currents[state], 'power': 0.0}  # OFF状态功率为0
-        else:
-            # 对应状态下的功率数据求平均值
-            appliance_power = P_Data[appliance][(current_values >= state_ranges[state][0]) & 
-                                                 (current_values <= state_ranges[state][1])].mean()
-            appliance_states[state] = {'current': state_currents[state], 'power': round(appliance_power, 2)}
+    crowding_distance_values = []
+    for i in range(len(non_dominated_sorted_solution)):
+        crowding_distance_values.append(crowding_distance(function1_values[:], function2_values[:], non_dominated_sorted_solution[i][:]))
+    solution2 = solution[:]
     
-    device_states[appliance] = appliance_states
-
-# 9. 输出结果
-for appliance, states in device_states.items():
-    print(f"\n{appliance}:")
-    for state, details in states.items():
-        print(f"  {state} -> Current: {details['current']} A, Power: {details['power']} W")
-
-# 输出全局电流范围
-print("\n全局电器电流范围（全局变量）:")
-for appliance, ranges in global_state_ranges.items():
-    print(f"{appliance}:")
-    for state, (lower, upper) in ranges.items():
-        print(f"  {state} -> Range: {lower} A to {upper} A")
-
-# 10. 仅保留所选电器的电流和功率数据
-I_Data = I_Data[appliances]
-P_Data = P_Data[appliances]
-
-# 11. 添加总电流与总功率列，并保留一位小数
-I_Data['total_current'] = I_Data.sum(axis=1).round(1)
-P_Data['total_power'] = P_Data.sum(axis=1).round(1)
-
-# 12. 添加电流数据的工作状态编码
-def get_state_code_for_current(current_values, state_ranges):
-    """
-    根据当前电流值为每行电流数据分配工作状态编码
-    """
-    state_codes = []
-    for current in current_values:
-        state_code = 0  # 默认状态为0
-        for state, (lower_bound, upper_bound) in state_ranges.items():
-            if lower_bound is not None and upper_bound is not None and lower_bound <= current <= upper_bound:
-                state_code = f'{state}'  # 使用状态编码
+    # Generating offsprings
+    while len(solution2) != 2 * pop_size:
+        a1 = random.randint(0, pop_size - 1)
+        b1 = random.randint(0, pop_size - 1)
+        solution2.append(crossover(solution[a1], solution[b1]))
+    
+    function1_values2 = [function1(solution2[i]) for i in range(2 * pop_size)]
+    function2_values2 = [function2(solution2[i]) for i in range(2 * pop_size)]
+    non_dominated_sorted_solution2 = fast_non_dominated_sort(function1_values2[:], function2_values2[:])
+    crowding_distance_values2 = []
+    for i in range(len(non_dominated_sorted_solution2)):
+        crowding_distance_values2.append(crowding_distance(function1_values2[:], function2_values2[:], non_dominated_sorted_solution2[i][:]))
+    
+    new_solution = []
+    for i in range(len(non_dominated_sorted_solution2)):
+        non_dominated_sorted_solution2_1 = [index_of(non_dominated_sorted_solution2[i][j], non_dominated_sorted_solution2[i]) for j in range(len(non_dominated_sorted_solution2[i]))]
+        front22 = sort_by_values(non_dominated_sorted_solution2_1[:], crowding_distance_values2[i][:])
+        front = [non_dominated_sorted_solution2[i][front22[j]] for j in range(len(non_dominated_sorted_solution2[i]))]
+        front.reverse()
+        for value in front:
+            new_solution.append(value)
+            if len(new_solution) == pop_size:
                 break
-        state_codes.append(state_code)
-    return state_codes
+        if len(new_solution) == pop_size:
+            break
+    solution = [solution2[i] for i in new_solution]
+    gen_no += 1
 
-# 添加电流数据的状态编码列
-for appliance in appliances:
-    state_codes = get_state_code_for_current(I_Data[appliance], global_state_ranges[appliance])
-    I_Data[f'{appliance}_S'] = state_codes  # 添加电流状态编码列
+# Let's plot the final front
+function1_values = [function1(solution[i]) for i in range(pop_size)]
+function2_values = [function2(solution[i]) for i in range(pop_size)]
 
-# 13. 使功率数据的状态编码与电流数据一致
-for appliance in appliances:
-    P_Data[f'{appliance}_S'] = I_Data[f'{appliance}_S']
+# Visualize the final front
+plt.xlabel('Function 1', fontsize=15)
+plt.ylabel('Function 2', fontsize=15)
+plt.title('Final Front')
+plt.scatter(function1_values, function2_values)
+plt.show()
 
-# 14. 保存数据
-I_Data.to_csv(path + r'\I_data_with_total_and_state.csv')
-P_Data.to_csv(path + r'\P_data_with_total_and_state.csv')
-
-# 打印前几行查看结果
-print(I_Data.head())
-print(P_Data.head())
+# Visualize the progress over generations
+for gen, (f1_vals, f2_vals) in enumerate(progress):
+    plt.figure(figsize=(10, 6))
+    plt.scatter(f1_vals, f2_vals)
+    plt.xlabel('Function 1', fontsize=15)
+    plt.ylabel('Function 2', fontsize=15)
+    plt.title(f'Generation {gen}')
+    plt.show()

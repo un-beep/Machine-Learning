@@ -4,41 +4,48 @@ import random
 # 假设每个设备的电流状态和有功功率状态
 device_states = {
     'dish_washer': {'state_00': {'current': 0.0, 'power': 0.0}, 
-                    'state_01': {'current': 0.4, 'power': 15.02}, 
-                    'state_10': {'current': 1.2, 'power': 141.98}, 
-                    'state_11': {'current': 6.4, 'power': 776.38}
+                    'state_01': {'current': 0.4, 'power': 15.12}, 
+                    'state_10': {'current': 1.2, 'power': 142.01}, 
+                    'state_11': {'current': 6.4, 'power': 776.64}
                 },
 
     'tv_pvr':      {'state_0': {'current': 0.0, 'power': 0.0},
-                    'state_1': {'current': 0.5, 'power': 38.72},
+                    'state_1': {'current': 0.5, 'power': 24.31},
                 },
 
     'furnace':     {'state_00': {'current': 0.0, 'power': 0.0},
-                    'state_01': {'current': 1.3, 'power': 109.62}, 
-                    'state_10': {'current': 2.2, 'power': 185.86},
+                    'state_01': {'current': 1.3, 'power': 110.32}, 
+                    'state_10': {'current': 2.2, 'power': 182.14},
                 },
 
-    'fridge':      {'state_00': {'current': 0.0, 'power': 0.0}, 
-                    'state_01': {'current': 1.0, 'power': 130.74},
-                },
 }
 
 # 目标电流和功率
-target_current = 2.7  # 总电流
-target_power = 268    # 总有功功率
+target_current = 1.7  # 总电流
+target_power = 146    # 总有功功率
 
 # 设备数量
 num_devices = len(device_states)
 
 # 个体表示：每个个体是一个整数数组，代表设备的工作状态
 # 状态映射: 0 - off, 1 - state_1, 2 - state_2, 3 - state_3
-state_mapping = {'state_0': 0, 'state_1': 1, 'state_2': 2, 'state_3': 3}
+# 状态映射: 对应每个设备的状态编码（4选一状态）
+state_mapping = {
+    'tv_pvr': {0: 'state_0', 1: 'state_1'},
+    'furnace': {0: 'state_00', 1: 'state_01', 2: 'state_10'},
+    'fridge': {0: 'state_00', 1: 'state_01'},
+    'dish_washer': {0: 'state_00', 1: 'state_01', 2: 'state_10', 3: 'state_11'}
+}
 
 # 初始化种群
 def init_population(pop_size):
     population = []
     for _ in range(pop_size):
-        individual = [random.choice([0, 1, 2, 3]) for _ in range(num_devices)]
+        individual = []
+        for device in device_states:
+            num_states = len(device_states[device])  # 获取设备的状态数量
+            # 根据设备状态数选择对应的编码
+            individual.append(random.randint(0, num_states - 1))
         population.append(individual)
     return population
 
@@ -48,7 +55,7 @@ def calculate_total_current(individual):
     total_power = 0.0
     for i, state_code in enumerate(individual):
         device = list(device_states.keys())[i]
-        state_name = list(state_mapping.keys())[state_code]
+        state_name = state_mapping[device][state_code]
         total_current += device_states[device][state_name]['current']
         total_power += device_states[device][state_name]['power']
     return total_current, total_power
@@ -81,7 +88,8 @@ def crossover(parent1, parent2):
 def mutate(individual, mutation_rate=0.05):
     for i in range(len(individual)):
         if random.random() < mutation_rate:
-            individual[i] = random.choice([0, 1, 2, 3])
+            num_states = len(device_states[list(device_states.keys())[i]])
+            individual[i] = random.randint(0, num_states - 1)
     return individual
 
 # 非支配排序
@@ -142,10 +150,10 @@ def nsga2(pop_size, generations, mutation_rate):
     return best_individual
 
 # 执行NSGA-II算法
-best_individual = nsga2(pop_size=50, generations=100, mutation_rate=0.05)
+best_individual = nsga2(pop_size=50, generations=500, mutation_rate=0.05)
 
 # 输出最终结果
 print("\nBest Individual Found:")
-recognized_devices = {list(device_states.keys())[i]: list(state_mapping.keys())[best_individual[i]] for i in range(num_devices)}
+recognized_devices = {list(device_states.keys())[i]: list(state_mapping[list(device_states.keys())[i]].keys())[best_individual[i]] for i in range(num_devices)}
 for device, state in recognized_devices.items():
     print(f"{device} is in {state}")

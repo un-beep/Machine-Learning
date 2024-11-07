@@ -24,8 +24,8 @@ device_states = {
 }
 
 # 目标电流和功率
-target_current = 2.7  # 总电流
-target_power = 280    # 总有功功率
+target_current = 1.7  # 总电流
+target_power = 146    # 总有功功率
 
 # 设备数量
 num_devices = len(device_states)

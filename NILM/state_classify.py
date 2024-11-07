@@ -33,8 +33,8 @@ I_Data.fillna(0, inplace=True)
 P_Data.fillna(0, inplace=True)
 
 # 5. 定义常量
-appliances = ['dish_washer', 'tv_pvr', 'furnace', 'fridge']  # 只选择这几个电器
-min_distance = 2  # 峰值之间的最小距离
+appliances = ['dish_washer', 'tv_pvr', 'furnace']  # 只选择这几个电器
+min_distance = 3  # 峰值之间的最小距离
 min_height = 1e-2  # 峰值的最小高度
 min_current_threshold = 0.1  # 最小电流阈值
 
@@ -156,10 +156,11 @@ for appliance in appliances:
 for appliance in appliances:
     P_Data[f'{appliance}_S'] = I_Data[f'{appliance}_S']
 
+
 # 14. 保存数据
 I_Data.to_csv(path + r'\I_data_with_total_and_state.csv')
 P_Data.to_csv(path + r'\P_data_with_total_and_state.csv')
 
 # 打印前几行查看结果
-print(I_Data.head())
-print(P_Data.head())
+print(I_Data.tail())
+print(P_Data.tail())

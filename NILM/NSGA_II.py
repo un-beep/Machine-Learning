@@ -150,7 +150,7 @@ def nsga2(pop_size, generations, mutation_rate):
     return best_individual
 
 # 执行NSGA-II算法
-best_individual = nsga2(pop_size=50, generations=500, mutation_rate=0.05)
+best_individual = nsga2(pop_size=500, generations=100, mutation_rate=0.05)
 
 # 输出最终结果
 print("\nBest Individual Found:")

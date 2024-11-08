@@ -1,6 +1,7 @@
 import math
 import random
-import matplotlib.pyplot as plt
+from collections import Counter
+import pandas as pd
 
 # 假设每个设备的电流状态和有功功率状态
 device_states = {
@@ -20,9 +21,6 @@ device_states = {
                 },
 }
 
-# 目标电流和功率
-target_current = 1.7  # 总电流
-target_power = 146    # 总有功功率
 
 # 设备数量
 num_devices = len(device_states)
@@ -49,7 +47,7 @@ def init_population(pop_size):
 
 # 计算电流和功率适应度函数，最小化目标
 # 电流函数function1
-def function1(individual):
+def function1(individual, total_current):
     total_current = 0.0
     err = 1e-6
     for i, state_code in enumerate(individual):
@@ -59,7 +57,7 @@ def function1(individual):
     return abs(round(target_current - total_current, 1))
 
 # 功率函数function2
-def function2(individual):
+def function2(individual, total_power):
     total_power = 0.0
     err = 1e-6
     for i, state_code in enumerate(individual):
@@ -131,7 +129,7 @@ def crowding_distance(values1, values2, front):
     sorted1 = sort_by_values(front, values1[:])
     sorted2 = sort_by_values(front, values2[:])
     # 边界最大化拥挤距离
-    err = 1e-6
+    err = 1e-6 # 防止除0
     distance[0] = distance[-1] = float('inf')
     for k in range(1, len(front) - 1):
         distance[k] += (values1[sorted1[k + 1]] - values1[sorted1[k - 1]]) / (max(values1) - min(values1) + err)
@@ -156,13 +154,13 @@ def mutate(individual, mutation_rate=0.05):
     return individual
 
 # NSGA-II主流程
-def nsga2(pop_size, generations, mutation_rate):
+def nsga2(total_current, target_power, pop_size, generations, mutation_rate):
 
     population = init_population(pop_size)
     progress = []
     for gen_no in range(generations):
-        function1_values = [function1(population[i]) for i in range(pop_size)]
-        function2_values = [function2(population[i]) for i in range(pop_size)]
+        function1_values = [function1(population[i], total_current) for i in range(pop_size)]
+        function2_values = [function2(population[i], target_power) for i in range(pop_size)]
         non_dominated_sorted_solution = fast_non_dominated_sort(function1_values[:], function2_values[:])
         print(f"The best front for Generation number {gen_no} is")
         for value in non_dominated_sorted_solution[0]:
@@ -182,8 +180,8 @@ def nsga2(pop_size, generations, mutation_rate):
             b1 = random.randint(0, pop_size - 1)
             solution2.append(mutate(crossover(population[a1], population[b1])[0], mutation_rate))
 
-        function1_values2 = [function1(solution2[i]) for i in range(2 * pop_size)]
-        function2_values2 = [function2(solution2[i]) for i in range(2 * pop_size)]
+        function1_values2 = [function1(solution2[i], total_current) for i in range(2 * pop_size)]
+        function2_values2 = [function2(solution2[i], target_power) for i in range(2 * pop_size)]
         non_dominated_sorted_solution2 = fast_non_dominated_sort(function1_values2[:], function2_values2[:])
         crowding_distance_values2 = []
         for i in range(len(non_dominated_sorted_solution2)):
@@ -203,11 +201,35 @@ def nsga2(pop_size, generations, mutation_rate):
                 break
         population = [solution2[i] for i in new_solution]
 
-# 执行NSGA-II算法
-best_individual = nsga2(pop_size=500, generations=100, mutation_rate=0.05)
+    return population
 
-# 输出最终结果
-print("\nBest Individual Found:")
-recognized_devices = {list(device_states.keys())[i]: list(state_mapping[list(device_states.keys())[i]].keys())[best_individual[i]] for i in range(num_devices)}
-for device, state in recognized_devices.items():
-    print(f"{device} is in {state}")
+if __name__ == "__main__":
+    path = r"NILM\Electricity_Data"
+    My_I_Data = pd.read_csv(path + r'\I_data_with_total_and_state.csv', parse_dates=True).head(1000)
+    My_P_Data = pd.read_csv(path + r'\P_data_with_total_and_state.csv', parse_dates=True).head(1000)
+    My_I_Data = My_I_Data.iloc[:, -4:]
+    My_P_Data = My_P_Data.iloc[:, -4:]
+    # 使用列名来提高可读性
+    total_current_col = My_I_Data.columns[0]
+    total_power_col = My_P_Data.columns[0]
+    state_col = My_I_Data.columns[1:4]
+    Nr=0
+    for i in range(len(My_P_Data)):
+        # 目标电流和功率
+        target_current = My_I_Data[total_current_col].iloc[i]
+        target_power = My_P_Data[total_power_col].iloc[i]
+        # 执行NSGA-II算法
+        best_individual_list = nsga2(target_current, target_power, pop_size=50, generations=100, mutation_rate=0.05)
+        counter = Counter(map(tuple, best_individual_list))  # 转换为tuple，因为list不可哈希
+        most_common_solution = counter.most_common(1)[0][0]  # 获取出现次数最多的解及其次数
+        best_individual = list(most_common_solution)
+           # 打印结果（根据需要保存或进一步处理）
+        print(f"Row {i}: Best solution {best_individual}")
+        true_list = My_I_Data[state_col].iloc[i].tolist()
+        if best_individual == true_list:
+            Nr+=1
+    # 计算准确率
+    accuracy = Nr / len(My_P_Data)
+    print(f"Accuracy = {accuracy}")
+
+    

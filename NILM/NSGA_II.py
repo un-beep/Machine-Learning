@@ -205,8 +205,8 @@ def nsga2(total_current, target_power, pop_size, generations, mutation_rate):
 
 if __name__ == "__main__":
     path = r"NILM\Electricity_Data"
-    My_I_Data = pd.read_csv(path + r'\I_data_with_total_and_state.csv', parse_dates=True).head(1000)
-    My_P_Data = pd.read_csv(path + r'\P_data_with_total_and_state.csv', parse_dates=True).head(1000)
+    My_I_Data = pd.read_csv(path + r'\I_data_with_total_and_state.csv', parse_dates=True).head(100)
+    My_P_Data = pd.read_csv(path + r'\P_data_with_total_and_state.csv', parse_dates=True).head(100)
     My_I_Data = My_I_Data.iloc[:, -4:]
     My_P_Data = My_P_Data.iloc[:, -4:]
     # 使用列名来提高可读性
@@ -214,7 +214,8 @@ if __name__ == "__main__":
     total_power_col = My_P_Data.columns[0]
     state_col = My_I_Data.columns[1:4]
     Nr=0
-    for i in range(len(My_P_Data)):
+    row = len(My_P_Data)
+    for i in range(row):
         # 目标电流和功率
         target_current = My_I_Data[total_current_col].iloc[i]
         target_power = My_P_Data[total_power_col].iloc[i]

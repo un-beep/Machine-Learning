@@ -1,9 +1,12 @@
 import glob
 import os.path
 import random
+import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.platform import gfile
+
 
 # Inception-v3模型瓶颈层的节点个数
 BOTTLENECK_TENSOR_SIZE = 2048
@@ -239,3 +242,6 @@ def main(_):
         test_accuracy = sess.run(evaluation_step, feed_dict={bottleneck_input: test_bottlenecks,
                                                                  ground_truth_input: test_ground_truth})
         print('Final test accuracy = %.1f%%' % (test_accuracy * 100))
+
+if __name__ == "__main__":
+    main(0)

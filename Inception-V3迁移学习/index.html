@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>flower</title>
+
+    </head>
+
+
+    <body>
+        花朵识别：
+        <input type="file" name="image" class="file-choose" id="flowerfile" accept="image/*" onchange="showandupload()" multiple/>
+        <canvas id="canvas" width="299" height="299"></canvas>
+		<p id="lab">识别结果</p>
+    </body>
+
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js"></script>   <!-- 使用jQuery -->
+    <script type="text/javascript">
+
+        var h,w;
+        var data;
+        var data64;
+        var canvas;
+        /*ff.addEventListener('change', function() {
+        var file = this.files[0];
+        });*/
+        function showandupload(){
+            var ff=document.getElementById("flowerfile")
+            var img=new Image(); 
+            if(ff.files[0]){
+                var imgdata=ff.files[0];
+                var reader=new FileReader();
+                reader.onload=function(e){
+                    var data=e.target.result;
+                    console.log(data);
+  
+                    img.onload=function(){
+                        w=img.width;
+                        h=img.height;
+                        
+                        if(h>w){
+                            var wstart=0;
+                            var wend=w;
+                            var hstart=Math.round(h/2-w/2);
+                            var hend=Math.round(h/2+w/2);
+                        }
+                        else{
+                            var hstart=0;
+                            var hend=h;
+                            var wstart=Math.round(w/2-h/2);
+                            var wend=Math.round(w/2+h/2);
+                        }
+
+                        var canvas=document.getElementById("canvas");
+                        var ctx=canvas.getContext("2d");
+                        ctx.fillStyle="black";
+                        ctx.drawImage(img,wstart,hstart,wend-wstart,hend-hstart,0,0,299,299);
+                        data64=canvas.toDataURL("image/jpg",1);
+
+                        var jsondata=JSON.stringify({"d":data64});
+
+                        $.ajax({
+                            type: "post",       
+                            url:"/uploadImg",
+                            data: jsondata,
+                            dataType: "json",
+                            async: true,
+                            processData: false, // 告诉jQuery不要去处理发送的数据
+                            success: function (data) {
+                                alert(data);	
+                            },
+                            error: function(data) {
+                                var name=data.responseText; 
+								var lab1=document.getElementById("lab");
+								lab1.innerText=String("识别结果："+name);
+                            }
+                        });
+
+                    }
+                    img.src=data;
+                    
+
+                };
+                reader.readAsDataURL(imgdata);
+            }
+  
+        }
+    </script>
+   
+</html>

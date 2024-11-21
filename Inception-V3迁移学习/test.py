@@ -135,8 +135,11 @@ def main(_):
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
 
-    bottleneck_tensor, jpeg_data_tensor = tf.import_graph_def(graph_def, return_elements=[
-        BOTTLENECK_TENSOR_NAME, JPEG_DATA_TENSOR_NAME])
+    # bottleneck_tensor, jpeg_data_tensor = tf.import_graph_def(graph_def, return_elements=[
+    #     BOTTLENECK_TENSOR_NAME, JPEG_DATA_TENSOR_NAME])
+
+    jpeg_data_tensor, bottleneck_tensor = tf.import_graph_def(graph_def, return_elements=[
+        JPEG_DATA_TENSOR_NAME, BOTTLENECK_TENSOR_NAME])
 
     bottleneck_input = tf.placeholder(tf.float32, [None, BOTTLENECK_TENSOR_SIZE], name='BottleneckInputPlaceholder')
     ground_truth_input = tf.placeholder(tf.float32, [None, n_classes], name='GroundTruthInput')
@@ -163,12 +166,12 @@ def main(_):
                 sess, n_classes, image_lists, BATCH, 'training', jpeg_data_tensor, bottleneck_tensor)
             sess.run(train_step, feed_dict={bottleneck_input: train_bottlenecks, ground_truth_input: train_ground_truth})
 
-            if i % 100 == 0:
-                validation_bottlenecks, validation_ground_truth = get_random_cached_bottlenecks(
-                    sess, n_classes, image_lists, BATCH, 'validation', jpeg_data_tensor, bottleneck_tensor)
-                validation_accuracy = sess.run(evaluation_step, feed_dict={
-                    bottleneck_input: validation_bottlenecks, ground_truth_input: validation_ground_truth})
-                print(f"Step {i}: Validation accuracy = {validation_accuracy:.2f}")
+            # if i % 100 == 0:
+            validation_bottlenecks, validation_ground_truth = get_random_cached_bottlenecks(
+                sess, n_classes, image_lists, BATCH, 'validation', jpeg_data_tensor, bottleneck_tensor)
+            validation_accuracy = sess.run(evaluation_step, feed_dict={
+                bottleneck_input: validation_bottlenecks, ground_truth_input: validation_ground_truth})
+            print(f"Step {i}: Validation accuracy = {validation_accuracy:.2f}")
 
 if __name__ == '__main__':
     tf.app.run()

@@ -19,8 +19,8 @@ INPUT_DATA = './images/flower_photos/'
 VALIDATION_PERCENTAGE = 10
 TEST_PERCENTAGE = 10
 LEARNING_RATE = 0.01
-STEPS = 4000
-BATCH = 100
+STEPS = 1000
+BATCH = 300
 
 def create_image_lists(testing_percentage, validation_percentage):
     """

@@ -166,12 +166,12 @@ def main(_):
                 sess, n_classes, image_lists, BATCH, 'training', jpeg_data_tensor, bottleneck_tensor)
             sess.run(train_step, feed_dict={bottleneck_input: train_bottlenecks, ground_truth_input: train_ground_truth})
 
-            # if i % 100 == 0:
-            validation_bottlenecks, validation_ground_truth = get_random_cached_bottlenecks(
-                sess, n_classes, image_lists, BATCH, 'validation', jpeg_data_tensor, bottleneck_tensor)
-            validation_accuracy = sess.run(evaluation_step, feed_dict={
-                bottleneck_input: validation_bottlenecks, ground_truth_input: validation_ground_truth})
-            print(f"Step {i}: Validation accuracy = {validation_accuracy:.2f}")
+            if i % 100 == 0:
+                validation_bottlenecks, validation_ground_truth = get_random_cached_bottlenecks(
+                    sess, n_classes, image_lists, BATCH, 'validation', jpeg_data_tensor, bottleneck_tensor)
+                validation_accuracy = sess.run(evaluation_step, feed_dict={
+                    bottleneck_input: validation_bottlenecks, ground_truth_input: validation_ground_truth})
+                print(f"Step {i}: Validation accuracy = {validation_accuracy:.2f}")
 
 if __name__ == '__main__':
     tf.app.run()

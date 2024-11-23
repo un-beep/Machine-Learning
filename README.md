@@ -16,7 +16,7 @@
 
 ## 3.SENet 通道注意力模块
 
-### 论文地址：https://openaccess.thecvf.com/content_cvpr_2018/papers/# Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.pdf
+### 论文地址：https://openaccess.thecvf.com/content_cvpr_2018/papers/Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.pdf
 
 ### code：https://github.com/hujie-frank/SENet
 

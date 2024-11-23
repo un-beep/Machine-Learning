@@ -6,7 +6,7 @@
 
 ## 2.STN模块
 
-### 论文地址：https://proceedings.neurips.cc/paper/2015/file/#33ceb07bf4eeb3da587e268d663aba1a-Paper.pdf
+### 论文地址：https://proceedings.neurips.cc/paper/2015/file/33ceb07bf4eeb3da587e268d663aba1a-Paper.pdf
 
 ### 源码：
 
